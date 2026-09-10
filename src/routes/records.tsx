@@ -31,7 +31,7 @@ const filters: { key: BlockKind | "ALL"; label: string }[] = [
 ];
 
 const kindTone: Record<BlockKind, string> = {
-  REGISTER: "border-primary/40 bg-primary/10 text-primary",
+  REGISTER: "border-primary/30 bg-primary-soft text-primary",
   TRANSFER: "border-accent/40 bg-accent/10 text-accent",
   VERIFY: "border-border bg-secondary text-muted-foreground",
 };
@@ -97,7 +97,7 @@ function Records() {
           </p>
           <p
             className={`mt-2 flex items-center gap-2 text-2xl font-semibold tracking-tight ${
-              intact ? "text-primary" : "text-destructive"
+              intact ? "text-success" : "text-destructive"
             }`}
           >
             <Link2 className="size-5" /> {intact ? "Intact" : "Broken"}
@@ -159,7 +159,7 @@ function BlockCard({ block }: { block: Block }) {
         </span>
         <span
           className={`ml-auto inline-flex items-center gap-1.5 text-xs ${
-            block.valid ? "text-primary" : "text-destructive"
+            block.valid ? "text-success" : "text-destructive"
           }`}
         >
           {block.valid ? <ShieldCheck className="size-4" /> : <ShieldAlert className="size-4" />}
