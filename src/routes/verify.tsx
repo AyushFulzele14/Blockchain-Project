@@ -315,7 +315,7 @@ function HashRow({ label, value }: { label: string; value: string }) {
           className="text-muted-foreground transition-colors hover:text-foreground"
           aria-label={`Copy ${label}`}
         >
-          {copied ? <Check className="size-3.5 text-primary" /> : <Copy className="size-3.5" />}
+          {copied ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />}
         </button>
       </div>
       <div className="mt-1.5">

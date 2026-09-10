@@ -262,7 +262,7 @@ function Dashboard() {
             {verifications.map((b) => (
               <li key={b.index} className="flex items-start gap-3">
                 {b.valid ? (
-                  <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" />
                 ) : (
                   <ShieldAlert className="mt-0.5 size-4 shrink-0 text-destructive" />
                 )}
