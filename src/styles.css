@@ -146,3 +146,21 @@
     color: var(--color-foreground);
   }
 }
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-image:
+      radial-gradient(60rem 40rem at 80% -10%, oklch(0.3 0.08 190 / 0.45), transparent),
+      radial-gradient(50rem 30rem at 0% 0%, oklch(0.28 0.06 250 / 0.4), transparent);
+    background-repeat: no-repeat;
+  }
+}
+
+@utility grid-lines {
+  background-image:
+    linear-gradient(to right, var(--color-border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-border) 1px, transparent 1px);
+  background-size: 44px 44px;
+  opacity: 0.25;
+}
