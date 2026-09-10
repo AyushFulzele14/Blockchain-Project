@@ -207,7 +207,7 @@ function ResultCard({ result, ledger }: { result: VerifyResult; ledger: Ledger }
       icon: ShieldCheck,
       label: "Authentic",
       copy: "Serial matches its on-chain origin record.",
-      cls: "border-primary bg-primary-soft text-primary",
+      cls: "border-success/40 bg-success-soft text-success",
     },
     expired: {
       icon: Clock,
