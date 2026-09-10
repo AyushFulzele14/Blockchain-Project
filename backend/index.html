@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Drug Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 0 20px;
+      }
+      h1 {
+        font-size: 22px;
+      }
+      section {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+      }
+      input {
+        display: block;
+        width: 100%;
+        margin: 6px 0 12px;
+        padding: 8px;
+        box-sizing: border-box;
+      }
+      button {
+        padding: 8px 16px;
+        cursor: pointer;
+      }
+      pre {
+        background: #f4f4f4;
+        padding: 10px;
+        border-radius: 6px;
+        white-space: pre-wrap;
+      }
+      .stage-0 {
+        color: #b8860b;
+      }
+      .stage-1 {
+        color: #1e90ff;
+      }
+      .stage-2 {
+        color: #228b22;
+      }
+      .stage-3 {
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>💊 Drug Tracker (local)</h1>
+    <p>Connected directly to your Hardhat node at <code>http://127.0.0.1:8545</code></p>
+
+    <section>
+      <h3>Contract address</h3>
+      <input id="contractAddress" value="0x5FbDB2315678afecb367f032d93F642f64180aa3" />
+    </section>
+
+    <section>
+      <h3>Create a new batch</h3>
+      <input id="drugName" placeholder="e.g. Paracetamol 500mg" />
+      <button onclick="createBatch()">Create Batch</button>
+    </section>
+
+    <section>
+      <h3>Advance a batch's stage</h3>
+      <input id="advanceId" placeholder="Batch ID, e.g. 1" type="number" />
+      <button onclick="advanceStage()">Advance Stage</button>
+    </section>
+
+    <section>
+      <h3>View a batch</h3>
+      <input id="viewId" placeholder="Batch ID, e.g. 1" type="number" />
+      <button onclick="viewBatch()">View Batch</button>
+      <pre id="output">Nothing loaded yet.</pre>
+    </section>
+
+    <script>
+      const abi = [
+        { inputs: [], stateMutability: "nonpayable", type: "constructor" },
+        {
+          anonymous: false,
+          inputs: [
+            { indexed: false, internalType: "uint256", name: "batchId", type: "uint256" },
+            { indexed: false, internalType: "string", name: "drugName", type: "string" },
+            { indexed: false, internalType: "address", name: "manufacturer", type: "address" },
+          ],
+          name: "BatchCreated",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            { indexed: false, internalType: "uint256", name: "batchId", type: "uint256" },
+            {
+              indexed: false,
+              internalType: "enum DrugTracker.Stage",
+              name: "newStage",
+              type: "uint8",
+            },
+          ],
+          name: "StageUpdated",
+          type: "event",
+        },
+        {
+          inputs: [{ internalType: "uint256", name: "_batchId", type: "uint256" }],
+          name: "advanceStage",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "batchCount",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          name: "batches",
+          outputs: [
+            { internalType: "string", name: "drugName", type: "string" },
+            { internalType: "address", name: "manufacturer", type: "address" },
+            { internalType: "enum DrugTracker.Stage", name: "stage", type: "uint8" },
+            { internalType: "uint256", name: "lastUpdated", type: "uint256" },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "string", name: "_drugName", type: "string" }],
+          name: "createBatch",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "uint256", name: "_batchId", type: "uint256" }],
+          name: "getBatch",
+          outputs: [
+            { internalType: "string", name: "drugName", type: "string" },
+            { internalType: "address", name: "manufacturer", type: "address" },
+            { internalType: "enum DrugTracker.Stage", name: "stage", type: "uint8" },
+            { internalType: "uint256", name: "lastUpdated", type: "uint256" },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "owner",
+          outputs: [{ internalType: "address", name: "", type: "address" }],
+          stateMutability: "view",
+          type: "function",
+        },
+      ];
+
+      const STAGE_NAMES = ["Manufactured", "Shipped", "Delivered", "Sold"];
+
+      function getContract() {
+        const address = document.getElementById("contractAddress").value.trim();
+        const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
+        return { provider, contract: new ethers.Contract(address, abi, provider) };
+      }
+
+      async function createBatch() {
+        const name = document.getElementById("drugName").value.trim();
+        if (!name) return alert("Enter a drug name first.");
+        const { provider, contract } = getContract();
+        const signer = await provider.getSigner(0);
+        const tx = await contract.connect(signer).createBatch(name);
+        await tx.wait();
+        alert("Batch created! Tx hash: " + tx.hash);
+        document.getElementById("drugName").value = "";
+      }
+
+      async function advanceStage() {
+        const id = document.getElementById("advanceId").value;
+        if (!id) return alert("Enter a batch ID first.");
+        const { provider, contract } = getContract();
+        const signer = await provider.getSigner(0);
+        const tx = await contract.connect(signer).advanceStage(id);
+        await tx.wait();
+        alert("Stage advanced! Tx hash: " + tx.hash);
+      }
+
+      async function viewBatch() {
+        const id = document.getElementById("viewId").value;
+        if (!id) return alert("Enter a batch ID first.");
+        const { contract } = getContract();
+        const result = await contract.getBatch(id);
+        const stageIndex = Number(result[2]);
+        const output = {
+          drugName: result[0],
+          manufacturer: result[1],
+          stage: STAGE_NAMES[stageIndex] + " (" + stageIndex + ")",
+          lastUpdated: new Date(Number(result[3]) * 1000).toLocaleString(),
+        };
+        document.getElementById("output").innerHTML =
+          `<span class="stage-${stageIndex}">` + JSON.stringify(output, null, 2) + `</span>`;
+      }
+    </script>
+  </body>
+</html>

@@ -1,24 +1,52 @@
-# ChainCare Pharma
+# PharmaLedger — Blockchain Anti-Counterfeit Pharmaceutical Network
 
-Build a Blockchain-Based Pharmaceutical Supply Chain web application featuring: 1) Landing Page with hero, quick actions (Verify Product, Register Product, View Blockchain Records), 2) Product Verification Page with QR scan/entry, batch details, counterfeit/authentic status, and transaction hash verification, 3) Manufacturer Dashboard with product registration, QR code generation, and verification history, 4) Blockchain Records explorer displaying blocks, tx hashes, timestamps, and verification status.
+A 5-stakeholder decentralized pharmaceutical traceability and verification platform:
+1. **Manufacturer**: Registers genuine medicine batches, mints origin blocks on-chain, and generates serialized QR labels.
+2. **Distributor**: Tracks transit handoffs, cold-chain conditions, and verifies factory origins.
+3. **Retailer / Pharmacy**: Authenticates inventory before stocking shelves, dispenses to patients, and quarantines suspect batches.
+4. **Consumer / Patient**: Scans package QR codes to verify genuine vs. counterfeit medicines and inspects full custody history.
+5. **Administrator**: Oversees authorized participant wallets, role permissions, and investigates tamper alerts.
 
-This project was built with [Lovable](https://lovable.dev).
+## Key Features
 
-## Build with Lovable
+- **Live Scannable Medicine Catalog**: Inspect genuine medicines, view high-resolution scannable QR codes and unique Pack Serial IDs.
+- **Consumer Instant Verification**: Point any smartphone camera at medicine QR codes or enter pack IDs to execute cryptographic provenance verification.
+- **Interactive 3D Packaging Inspector**: Preview realistic medicine packaging boxes with tamper-evident holographic seals, batch lots, and barcodes.
+- **Dual-Mode Blockchain Ledger**: Works both with an active local Hardhat Ethereum node (`DrugTracker.sol`) and with a high-fidelity deterministic browser ledger.
+- **Counterfeit Threat Reporting**: Immediate flagging and administrative escalation of unauthorized reproduction attempts.
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/a354bbb4-8f93-401e-afcb-1a785fc53dd3).
+## Getting Started
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+### Prerequisites
+- Node.js (v18+)
+- npm or bun
 
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+### Local Development
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
+```
+
+The application will be running at `http://localhost:8080/`.
+
+### Blockchain Smart Contract Setup (Optional)
+
+To run the local Ethereum node with Hardhat:
+
+```sh
+# Start local Hardhat Ethereum node
+npm run hardhat:node
+
+# Deploy DrugTracker.sol smart contract
+npm run hardhat:deploy
+```
+
+### Production Build
+
+```sh
+npm run build
 ```
