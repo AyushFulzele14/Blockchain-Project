@@ -10,28 +10,27 @@ const nav = [
 
 export function SiteShell({ children }: { children: ReactNode }) {
   return (
-    <div className="relative min-h-screen">
-      <div className="pointer-events-none absolute inset-0 grid-lines [mask-image:linear-gradient(to_bottom,black,transparent_70%)]" />
-      <header className="relative z-10 border-b border-border/70 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
+    <div className="relative min-h-screen soft-glow">
+      <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
           <Link to="/" className="flex items-center gap-2.5">
-            <span className="flex size-9 items-center justify-center rounded-md bg-primary/15 text-primary ring-1 ring-primary/30">
+            <span className="flex size-9 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
               <ShieldCheck className="size-5" />
             </span>
             <span className="leading-tight">
-              <span className="block text-sm font-semibold tracking-tight">PharmaLedger</span>
-              <span className="block font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                chain of custody
+              <span className="block text-base font-bold tracking-tight">PharmaLedger</span>
+              <span className="block text-[11px] font-medium text-muted-foreground">
+                Chain of custody
               </span>
             </span>
           </Link>
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-1 rounded-full border border-border bg-card p-1 shadow-card">
             {nav.map(({ to, label, icon: Icon }) => (
               <Link
                 key={to}
                 to={to}
-                activeProps={{ className: "bg-secondary text-foreground" }}
-                className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                activeProps={{ className: "bg-primary-soft text-primary" }}
+                className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
               >
                 <Icon className="size-4" />
                 <span className="hidden sm:inline">{label}</span>
@@ -40,9 +39,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
           </nav>
         </div>
       </header>
-      <main className="relative z-10 mx-auto max-w-6xl px-5 py-10">{children}</main>
-      <footer className="relative z-10 border-t border-border/70 py-6">
-        <p className="mx-auto max-w-6xl px-5 font-mono text-xs text-muted-foreground">
+      <main className="relative z-10 mx-auto max-w-6xl px-6 py-14">{children}</main>
+      <footer className="relative z-10 border-t border-border py-8">
+        <p className="mx-auto max-w-6xl px-6 text-sm text-muted-foreground">
           Demo network · records are simulated and stored in this browser
         </p>
       </footer>
@@ -62,13 +61,11 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section
-      className={`rounded-xl border border-border/80 bg-card/70 p-5 shadow-[0_1px_0_0_oklch(1_0_0_/_0.04)_inset] ${className}`}
-    >
+    <section className={`card-surface p-6 sm:p-7 ${className}`}>
       {title ? (
-        <div className="mb-4 flex items-baseline justify-between gap-3">
-          <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
-          {hint ? <span className="font-mono text-[11px] text-muted-foreground">{hint}</span> : null}
+        <div className="mb-5 flex items-baseline justify-between gap-3">
+          <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+          {hint ? <span className="text-xs font-medium text-muted-foreground">{hint}</span> : null}
         </div>
       ) : null}
       {children}
