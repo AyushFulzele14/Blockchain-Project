@@ -88,8 +88,8 @@ function Dashboard() {
     <SiteShell>
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.28em] text-primary">Manufacturer</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Batch console</h1>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Manufacturer</p>
+          <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">Batch console</h1>
           <p className="mt-3 max-w-xl text-sm text-muted-foreground">
             Register a batch to mint its origin block, then print the QR label that pharmacies scan.
           </p>
@@ -99,7 +99,7 @@ function Dashboard() {
             setLedger(resetLedger());
             setSelected(null);
           }}
-          className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           <RotateCcw className="size-3.5" /> Reset demo data
         </button>
@@ -165,7 +165,7 @@ function Dashboard() {
             />
             <button
               type="submit"
-              className="sm:col-span-2 inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              className="sm:col-span-2 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
             >
               <PackagePlus className="size-4" /> Register batch on chain
             </button>
@@ -180,10 +180,10 @@ function Dashboard() {
                   <img
                     src={qr}
                     alt={`QR code for serial ${selected.id}`}
-                    className="size-32 rounded-md bg-white p-1.5"
+                    className="size-32 rounded-2xl bg-card p-2 ring-1 ring-border"
                   />
                 ) : (
-                  <div className="size-32 animate-pulse rounded-md bg-secondary" />
+                  <div className="size-32 animate-pulse rounded-2xl bg-secondary" />
                 )}
                 <div className="min-w-0">
                   <p className="text-sm font-semibold">{selected.name}</p>
@@ -196,8 +196,8 @@ function Dashboard() {
                   </p>
                 </div>
               </div>
-              <div className="rounded-md border border-border bg-secondary/30 p-3">
-                <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+              <div className="rounded-xl border border-border bg-surface-muted p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   origin tx
                 </p>
                 <div className="mt-1.5">
@@ -208,7 +208,7 @@ function Dashboard() {
                 <a
                   href={qr}
                   download={`${selected.id}.png`}
-                  className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm transition-colors hover:bg-secondary"
+                  className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm transition-colors hover:bg-secondary"
                 >
                   <Download className="size-4" /> Download label
                 </a>
@@ -226,7 +226,7 @@ function Dashboard() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-left font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+              <tr className="border-b border-border text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <th className="pb-2 pr-4">Serial</th>
                 <th className="pb-2 pr-4">Product</th>
                 <th className="pb-2 pr-4">Expiry</th>
@@ -244,7 +244,7 @@ function Dashboard() {
                   <td className="py-3 text-right">
                     <button
                       onClick={() => setSelected(p)}
-                      className="rounded-md border border-border px-2.5 py-1 text-xs transition-colors hover:border-primary/50"
+                      className="rounded-full border border-border px-3 py-1.5 text-xs transition-colors hover:border-primary/50"
                     >
                       QR
                     </button>
@@ -285,8 +285,8 @@ function Dashboard() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-border/80 bg-card/70 p-4">
-      <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+    <div className="card-surface p-5">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
       <p className="mt-2 text-2xl font-semibold tracking-tight">{value}</p>
@@ -313,7 +313,7 @@ function Input({
 }) {
   return (
     <label className={`block ${className}`}>
-      <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </span>
       <input
@@ -322,7 +322,7 @@ function Input({
         required={required}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full rounded-md border border-input bg-background/60 px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/60 focus:border-primary"
+        className="mt-1.5 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/60 focus:border-primary"
       />
     </label>
   );

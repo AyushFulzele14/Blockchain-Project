@@ -93,8 +93,8 @@ function VerifyPage() {
   return (
     <SiteShell>
       <header className="mb-8">
-        <p className="font-mono text-xs uppercase tracking-[0.28em] text-primary">Verification</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Verification</p>
+        <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
           Check a pack against the chain
         </h1>
         <p className="mt-3 max-w-xl text-sm text-muted-foreground">
@@ -105,7 +105,7 @@ function VerifyPage() {
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
         <Panel title="Scan or enter serial" hint="QR / manual">
-          <div className="relative overflow-hidden rounded-lg border border-border bg-secondary/40">
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-surface-muted">
             <video
               ref={videoRef}
               muted
@@ -123,7 +123,7 @@ function VerifyPage() {
           </div>
           <button
             onClick={toggleCamera}
-            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md border border-border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-secondary"
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-secondary"
           >
             {scanning ? <CameraOff className="size-4" /> : <Camera className="size-4" />}
             {scanning ? "Stop camera" : "Start camera"}
@@ -141,11 +141,11 @@ function VerifyPage() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="PH-AMX-8842-0001"
-              className="min-w-0 flex-1 rounded-md border border-input bg-background/60 px-3 py-2.5 font-mono text-sm outline-none placeholder:text-muted-foreground/60 focus:border-primary"
+              className="min-w-0 flex-1 rounded-xl border border-input bg-background px-3 py-2.5 font-mono text-sm outline-none placeholder:text-muted-foreground/60 focus:border-primary"
             />
             <button
               type="submit"
-              className="rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              className="rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
             >
               Verify
             </button>
@@ -153,7 +153,7 @@ function VerifyPage() {
 
           {samples.length ? (
             <div className="mt-4">
-              <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 try a registered serial
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -164,7 +164,7 @@ function VerifyPage() {
                       setCode(p.id);
                       submit(p.id);
                     }}
-                    className="rounded-md border border-border px-2.5 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+                    className="rounded-full border border-border px-3 py-1.5 font-mono text-[11px] text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
                   >
                     {p.id}
                   </button>
@@ -174,7 +174,7 @@ function VerifyPage() {
                     setCode("PH-FAKE-0000-9999");
                     submit("PH-FAKE-0000-9999");
                   }}
-                  className="rounded-md border border-destructive/40 px-2.5 py-1 font-mono text-[11px] text-destructive transition-colors hover:bg-destructive/10"
+                  className="rounded-full border border-destructive/40 px-3 py-1.5 font-mono text-[11px] text-destructive transition-colors hover:bg-destructive/10"
                 >
                   PH-FAKE-0000-9999
                 </button>
@@ -207,7 +207,7 @@ function ResultCard({ result, ledger }: { result: VerifyResult; ledger: Ledger }
       icon: ShieldCheck,
       label: "Authentic",
       copy: "Serial matches its on-chain origin record.",
-      cls: "border-primary/50 bg-primary/10 text-primary",
+      cls: "border-primary bg-primary-soft text-primary",
     },
     expired: {
       icon: Clock,
@@ -229,7 +229,7 @@ function ResultCard({ result, ledger }: { result: VerifyResult; ledger: Ledger }
   return (
     <>
       <Panel>
-        <div className={`flex items-start gap-3 rounded-lg border p-4 ${tone.cls}`}>
+        <div className={`flex items-start gap-3 rounded-2xl border p-5 ${tone.cls}`}>
           <Icon className="mt-0.5 size-6 shrink-0" />
           <div>
             <p className="text-base font-semibold tracking-tight">{tone.label}</p>
@@ -290,7 +290,7 @@ function TimelineRow({ block }: { block: Block }) {
 function Field({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <dt className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+      <dt className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </dt>
       <dd className={`mt-1 text-sm ${mono ? "font-mono" : ""}`}>{value}</dd>
@@ -301,9 +301,9 @@ function Field({ label, value, mono }: { label: string; value: string; mono?: bo
 function HashRow({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="rounded-md border border-border bg-secondary/30 p-3">
+    <div className="rounded-xl border border-border bg-surface-muted p-3">
       <div className="flex items-center justify-between gap-3">
-        <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           {label}
         </span>
         <button
