@@ -34,7 +34,7 @@ export type Ledger = { products: Product[]; blocks: Block[] };
 export type VerifyResult = {
   status: "authentic" | "counterfeit" | "expired";
   code: string;
-  product?: Product;
+  product?: Product | undefined;
   block: Block;
 };
 
