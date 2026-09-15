@@ -1,29 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import {
-  Blocks,
-  Link2,
-  ShieldCheck,
-  ShieldAlert,
-  Search,
-  RefreshCw,
-  Cpu,
-  Layers,
-  RotateCcw,
-  Trash2,
-} from "lucide-react";
+import { Blocks, Link2, ShieldCheck, ShieldAlert, Search, RefreshCw } from "lucide-react";
 import { SiteShell, Panel, Hash } from "@/components/site-shell";
-import {
-  formatTime,
-  loadLedger,
-  resetLedger,
-  removeBlock,
-  clearVerifyBlocks,
-  shortHash,
-  type Block,
-  type BlockKind,
-  type Ledger,
-} from "@/lib/chain";
+import { formatTime, loadLedger, type BlockKind, type Ledger } from "@/lib/chain";
 import { useWeb3 } from "@/hooks/use-web3";
 import { getOnChainEvents, type OnChainEventRecord } from "@/lib/web3";
 
@@ -117,37 +96,6 @@ function Records() {
     setRefreshing(false);
   }
 
-  function handleResetLedger() {
-    if (
-      window.confirm(
-        "Reset local simulation ledger? This will clear bloated blocks and restore the clean initial genesis ledger.",
-      )
-    ) {
-      const fresh = resetLedger();
-      setLedger(fresh);
-      setDisplayCount(30);
-    }
-  }
-
-  function handleClearVerifyBlocks() {
-    if (
-      window.confirm(
-        "Remove all consumer verification scan blocks? Batch registration and custody transit blocks will be preserved.",
-      )
-    ) {
-      const cleaned = clearVerifyBlocks(ledger);
-      setLedger(cleaned);
-      setDisplayCount(30);
-    }
-  }
-
-  function handleDeleteBlock(blockIndex: number) {
-    if (window.confirm(`Are you sure you want to remove block #${blockIndex} from the ledger?`)) {
-      const updated = removeBlock(ledger, blockIndex);
-      setLedger(updated);
-    }
-  }
-
   // Unified records
   const allRecords: ExplorerRecord[] = useMemo(() => {
     if (status.connected && onChainEvents.length > 0) {
@@ -226,24 +174,6 @@ function Records() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {!status.connected && (
-            <>
-              <button
-                onClick={handleClearVerifyBlocks}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-amber-500 hover:text-amber-600 dark:hover:text-amber-400"
-                title="Remove unnecessary verification scan blocks"
-              >
-                <Layers className="size-3.5" /> Clear Verify Scans
-              </button>
-              <button
-                onClick={handleResetLedger}
-                className="inline-flex items-center gap-1.5 rounded-full border border-destructive/40 bg-destructive/5 px-3.5 py-2 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
-                title="Reset ledger back to initial seed height"
-              >
-                <RotateCcw className="size-3.5" /> Reset Ledger
-              </button>
-            </>
-          )}
           <button
             onClick={handleRefresh}
             disabled={refreshing}
@@ -320,7 +250,7 @@ function Records() {
 
       <div className="mt-5 space-y-4">
         {visibleBlocks.map((b) => (
-          <RecordCard key={b.id} record={b} onDelete={handleDeleteBlock} />
+          <RecordCard key={b.id} record={b} />
         ))}
         {!filteredBlocks.length && (
           <Panel>
@@ -344,13 +274,7 @@ function Records() {
   );
 }
 
-function RecordCard({
-  record,
-  onDelete,
-}: {
-  record: ExplorerRecord;
-  onDelete?: (blockIndex: number) => void;
-}) {
+function RecordCard({ record }: { record: ExplorerRecord }) {
   return (
     <Panel>
       <div className="flex flex-wrap items-center gap-3">
@@ -374,15 +298,6 @@ function RecordCard({
             {record.valid ? <ShieldCheck className="size-4" /> : <ShieldAlert className="size-4" />}
             {record.isOnChain ? "On-Chain Verified" : "Verified"}
           </span>
-          {!record.isOnChain && onDelete && (
-            <button
-              onClick={() => onDelete(record.index)}
-              title={`Remove block #${record.index} from ledger`}
-              className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground transition-colors hover:border-destructive hover:bg-destructive/10 hover:text-destructive"
-            >
-              <Trash2 className="size-3" /> Remove
-            </button>
-          )}
         </div>
       </div>
 
