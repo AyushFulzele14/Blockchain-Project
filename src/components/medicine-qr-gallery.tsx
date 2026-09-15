@@ -57,9 +57,7 @@ export function MedicineQrCard({
     let active = true;
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     const payload =
-      encodeMode === "url"
-        ? `${origin}/verify?code=${encodeURIComponent(product.id)}`
-        : product.id;
+      encodeMode === "url" ? `${origin}/verify?code=${encodeURIComponent(product.id)}` : product.id;
 
     void QRCode.toDataURL(payload, {
       margin: 1,
@@ -115,7 +113,7 @@ export function MedicineQrCard({
             className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
               isFake
                 ? "bg-destructive/10 text-destructive border-destructive/30"
-                : STAGE_BADGE_STYLES[product.stage ?? 0] ?? "bg-secondary text-foreground"
+                : (STAGE_BADGE_STYLES[product.stage ?? 0] ?? "bg-secondary text-foreground")
             }`}
           >
             {isFake ? "Fake Sample" : (product.stageName ?? "Manufactured")}
@@ -161,7 +159,11 @@ export function MedicineQrCard({
               title="Click to copy pack serial ID"
             >
               <span>{product.id}</span>
-              {copied ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3 text-muted-foreground" />}
+              {copied ? (
+                <Check className="size-3 text-emerald-500" />
+              ) : (
+                <Copy className="size-3 text-muted-foreground" />
+              )}
             </button>
           </div>
 
@@ -177,7 +179,10 @@ export function MedicineQrCard({
 
           <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5">
             <span>Manufacturer:</span>
-            <span className="font-medium text-foreground truncate max-w-[130px]" title={product.manufacturer}>
+            <span
+              className="font-medium text-foreground truncate max-w-[130px]"
+              title={product.manufacturer}
+            >
               {product.manufacturer}
             </span>
           </div>
@@ -295,9 +300,7 @@ export function MedicineQrGallery({
             <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl text-foreground">
               {title}
             </h2>
-            <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground max-w-2xl">
-              {subtitle}
-            </p>
+            <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground max-w-2xl">{subtitle}</p>
           </div>
 
           {/* Quick Search */}
@@ -380,7 +383,8 @@ export function MedicineQrGallery({
         </div>
 
         <span className="text-[11px] text-muted-foreground">
-          Showing {filtered.length + (showFakeSample ? 1 : 0)} medicine package{filtered.length !== 1 ? "s" : ""}
+          Showing {filtered.length + (showFakeSample ? 1 : 0)} medicine package
+          {filtered.length !== 1 ? "s" : ""}
         </span>
       </div>
 
@@ -413,7 +417,9 @@ export function MedicineQrGallery({
       {filtered.length === 0 && !showFakeSample && (
         <div className="py-12 text-center text-muted-foreground">
           <p className="text-sm font-semibold">No medicines match your search filter</p>
-          <p className="mt-1 text-xs">Try clearing the search query or selecting &ldquo;All Medicines&rdquo;.</p>
+          <p className="mt-1 text-xs">
+            Try clearing the search query or selecting &ldquo;All Medicines&rdquo;.
+          </p>
         </div>
       )}
 

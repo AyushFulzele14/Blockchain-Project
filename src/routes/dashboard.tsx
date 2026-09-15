@@ -152,8 +152,8 @@ function Dashboard() {
     // Fallback to local ledger
     return ledger.products.map((p) => ({
       ...p,
-      stage: 0,
-      stageName: "Manufactured",
+      stage: p.stage ?? 0,
+      stageName: p.stageName ?? "Manufactured",
       isOnChain: false,
     }));
   }, [status.connected, onChainBatches, ledger.products]);

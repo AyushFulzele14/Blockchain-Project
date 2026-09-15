@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import QRCode from "qrcode";
 import {
   ScanLine,
@@ -54,10 +54,14 @@ import {
 
 export const Route = createFileRoute("/verify")({
   validateSearch: (search: Record<string, unknown>): { code?: string; id?: string } => {
-    return {
-      code: typeof search.code === "string" ? search.code : undefined,
-      id: typeof search.id === "string" ? search.id : undefined,
-    };
+    const result: { code?: string; id?: string } = {};
+    if (typeof search["code"] === "string" && search["code"].trim()) {
+      result.code = search["code"].trim();
+    }
+    if (typeof search["id"] === "string" && search["id"].trim()) {
+      result.id = search["id"].trim();
+    }
+    return result;
   },
   head: () => ({
     meta: [
@@ -113,6 +117,7 @@ function VerifyPage() {
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const lastAutoVerifiedCodeRef = useRef<string | null>(null);
 
   useEffect(() => {
     setLedger(loadLedger());
@@ -124,14 +129,78 @@ function VerifyPage() {
     }
   }, [status.connected, config]);
 
+  const submit = useCallback(
+    async (value: string) => {
+      const trimmed = value.trim();
+      if (!trimmed) return;
+      setVerifying(true);
+      setReportSuccess(false);
+
+      const currentLedger = loadLedger();
+
+      try {
+        if (status.connected) {
+          const match = trimmed.match(/\d+/);
+          const batchNum = match ? parseInt(match[0], 10) : 0;
+
+          if (batchNum > 0) {
+            const batch = await getBatchOnChain(batchNum, config);
+            if (batch) {
+              setOnChainResult({
+                status: "authentic",
+                code: trimmed,
+                batch,
+                searchedAt: new Date().toLocaleString(),
+              });
+              setSimResult(null);
+              return;
+            }
+          }
+
+          // Check if simulated has it even if on-chain doesn't
+          const { ledger: next, result: res } = verifyCode(currentLedger, trimmed);
+          setLedger(next);
+          if (res.status === "authentic" || res.status === "expired") {
+            setSimResult(res);
+            setOnChainResult(null);
+            return;
+          }
+
+          // Counterfeit on-chain
+          setOnChainResult({
+            status: "counterfeit",
+            code: trimmed,
+            batch: null,
+            searchedAt: new Date().toLocaleString(),
+          });
+          setSimResult(null);
+        } else {
+          const { ledger: next, result: res } = verifyCode(currentLedger, trimmed);
+          setLedger(next);
+          setSimResult(res);
+          setOnChainResult(null);
+        }
+      } catch {
+        const { ledger: next, result: res } = verifyCode(currentLedger, trimmed);
+        setLedger(next);
+        setSimResult(res);
+        setOnChainResult(null);
+      } finally {
+        setVerifying(false);
+      }
+    },
+    [status.connected, config],
+  );
+
   // Handle URL Query Params (?code=... or ?id=...) for auto-verification from camera scan
   useEffect(() => {
-    const targetCode = searchParams.code || searchParams.id;
-    if (targetCode) {
+    const targetCode = (searchParams.code || searchParams.id || "").trim();
+    if (targetCode && targetCode !== lastAutoVerifiedCodeRef.current) {
+      lastAutoVerifiedCodeRef.current = targetCode;
       setCode(targetCode);
       void submit(targetCode);
     }
-  }, [searchParams.code, searchParams.id]);
+  }, [searchParams.code, searchParams.id, submit]);
 
   useEffect(() => {
     return () => streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -159,67 +228,6 @@ function VerifyPage() {
       setScanError(
         "Camera preview unavailable — please enter the batch ID or serial printed on the box.",
       );
-    }
-  }
-
-  async function submit(value: string) {
-    const trimmed = value.trim();
-    if (!trimmed) return;
-    setVerifying(true);
-    setReportSuccess(false);
-
-    // Ensure we have a loaded ledger instance even if state hasn't populated yet
-    const currentLedger = ledger.products.length > 0 ? ledger : loadLedger();
-
-    try {
-      if (status.connected) {
-        const match = trimmed.match(/\d+/);
-        const batchNum = match ? parseInt(match[0], 10) : 0;
-
-        if (batchNum > 0) {
-          const batch = await getBatchOnChain(batchNum, config);
-          if (batch) {
-            setOnChainResult({
-              status: "authentic",
-              code: trimmed,
-              batch,
-              searchedAt: new Date().toLocaleString(),
-            });
-            setSimResult(null);
-            return;
-          }
-        }
-
-        // Check if simulated has it even if on-chain doesn't
-        const { ledger: next, result: res } = verifyCode(currentLedger, trimmed);
-        setLedger(next);
-        if (res.status === "authentic" || res.status === "expired") {
-          setSimResult(res);
-          setOnChainResult(null);
-          return;
-        }
-
-        // Counterfeit on-chain
-        setOnChainResult({
-          status: "counterfeit",
-          code: trimmed,
-          batch: null,
-          searchedAt: new Date().toLocaleString(),
-        });
-        setSimResult(null);
-      } else {
-        const { ledger: next, result: res } = verifyCode(currentLedger, trimmed);
-        setLedger(next);
-        setSimResult(res);
-        setOnChainResult(null);
-      }
-    } catch {
-      const { ledger: next, result: res } = verifyCode(currentLedger, trimmed);
-      setLedger(next);
-      setSimResult(res);
-      setOnChainResult(null);
-    } finally {
-      setVerifying(false);
     }
   }
 
@@ -265,8 +273,8 @@ function VerifyPage() {
         </h1>
         <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
           Consumers and patients scan the packaging QR code or enter the Pack Serial ID to verify
-          medicine authenticity, confirm manufacturing & expiry dates, inspect the 4-party custody trail,
-          and flag suspected counterfeits.
+          medicine authenticity, confirm manufacturing & expiry dates, inspect the 4-party custody
+          trail, and flag suspected counterfeits.
         </p>
       </header>
 
@@ -533,7 +541,9 @@ function VerifiedMedicineQrBox({
               <Sparkles className="size-3" /> Scanned Packaging QR & Serial ID
             </span>
             <p className="font-mono text-xs font-bold text-foreground mt-0.5">{id}</p>
-            <p className="text-[11px] text-muted-foreground">Lot: {batch} · {name}</p>
+            <p className="text-[11px] text-muted-foreground">
+              Lot: {batch} · {name}
+            </p>
           </div>
         </div>
 

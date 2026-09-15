@@ -90,7 +90,11 @@ export function MedicinePackageModal({
                   : "bg-primary/10 text-primary border-primary/30"
               }`}
             >
-              {medicine.isFake ? <ShieldAlert className="size-4" /> : <ShieldCheck className="size-4" />}
+              {medicine.isFake ? (
+                <ShieldAlert className="size-4" />
+              ) : (
+                <ShieldCheck className="size-4" />
+              )}
             </span>
             <div>
               <h3 className="text-sm font-bold text-foreground">
@@ -244,7 +248,9 @@ export function MedicinePackageModal({
                     onClose();
                   }}
                   className={`inline-flex items-center gap-2 rounded-full px-6 py-2 text-xs font-bold text-white shadow-md transition-all hover:opacity-90 ${
-                    medicine.isFake ? "bg-destructive hover:bg-destructive/90" : "bg-primary hover:bg-primary/90"
+                    medicine.isFake
+                      ? "bg-destructive hover:bg-destructive/90"
+                      : "bg-primary hover:bg-primary/90"
                   }`}
                 >
                   <ShieldCheck className="size-4" />

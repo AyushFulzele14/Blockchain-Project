@@ -109,7 +109,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                             <div>
                               <div className="flex items-center gap-1.5">
                                 <span>{p.name}</span>
-                                <span className="rounded-full bg-border px-1.5 py-0.2 text-[9px] uppercase font-bold">
+                                <span className="rounded-full bg-border px-1.5 py-0.5 text-[9px] uppercase font-bold">
                                   {p.badge}
                                 </span>
                               </div>

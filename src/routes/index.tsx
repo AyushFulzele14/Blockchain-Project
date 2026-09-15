@@ -226,8 +226,8 @@ function Home() {
             </span>
             <h3 className="text-sm font-bold text-foreground">Scan with Phone Camera</h3>
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              Point your iOS or Android camera at the QR code on the box to open the verification link,
-              or enter the Pack ID directly.
+              Point your iOS or Android camera at the QR code on the box to open the verification
+              link, or enter the Pack ID directly.
             </p>
           </div>
 
@@ -237,8 +237,8 @@ function Home() {
             </span>
             <h3 className="text-sm font-bold text-foreground">View Cryptographic Proof</h3>
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              Instantly inspect manufacturer origin, batch lot, expiration date, and complete custody
-              handoffs on the Ethereum blockchain.
+              Instantly inspect manufacturer origin, batch lot, expiration date, and complete
+              custody handoffs on the Ethereum blockchain.
             </p>
           </div>
         </div>

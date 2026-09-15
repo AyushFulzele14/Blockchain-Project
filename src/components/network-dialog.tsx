@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -33,8 +33,13 @@ export function NetworkStatusBadge() {
   const [contractAddressInput, setContractAddressInput] = useState(config.contractAddress);
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
 
+  useEffect(() => {
+    setRpcUrlInput(config.rpcUrl);
+    setContractAddressInput(config.contractAddress);
+  }, [config.rpcUrl, config.contractAddress, open]);
+
   const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
+    void navigator.clipboard?.writeText(text).catch(() => {});
     setCopiedCmd(label);
     setTimeout(() => setCopiedCmd(null), 2000);
   };
@@ -84,7 +89,7 @@ export function NetworkStatusBadge() {
           </span>
           <span className="md:hidden">{status.connected ? "Live Web3" : "Simulated"}</span>
           {status.connected && (
-            <span className="rounded bg-emerald-500/20 px-1.5 py-0.2 font-mono text-[10px]">
+            <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 font-mono text-[10px]">
               #{status.blockNumber}
             </span>
           )}

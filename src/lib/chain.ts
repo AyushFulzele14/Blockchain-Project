@@ -488,7 +488,34 @@ export function loadLedger(): Ledger {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as Ledger;
-      if (parsed.stakeholders && parsed.products) return parsed;
+      if (parsed.stakeholders && parsed.products && Array.isArray(parsed.blocks)) {
+        // Automatically sanitize and remove any "QA341" block or runaway duplicates
+        const filteredBlocks = parsed.blocks.filter(
+          (b) => !b.summary.includes("QA341") && !b.productId.includes("QA341"),
+        );
+        if (filteredBlocks.length !== parsed.blocks.length) {
+          let prevHash = GENESIS_HASH;
+          const reindexed = filteredBlocks.map((b, idx) => {
+            const newIndex = idx + 1;
+            const newPrevHash = prevHash;
+            const newHash = pseudoHash(`${newIndex}|${newPrevHash}|${b.txHash}`);
+            prevHash = newHash;
+            return {
+              ...b,
+              index: newIndex,
+              prevHash: newPrevHash,
+              hash: newHash,
+            };
+          });
+          const cleaned: Ledger = {
+            ...parsed,
+            blocks: reindexed,
+          };
+          saveLedger(cleaned);
+          return cleaned;
+        }
+        return parsed;
+      }
     }
   } catch {
     /* fall through to seed */
@@ -511,6 +538,82 @@ export function resetLedger(): Ledger {
   const seed = buildSeed();
   saveLedger(seed);
   return seed;
+}
+
+export function removeBlocksByQuery(ledger: Ledger, query: string): Ledger {
+  const q = query.trim().toLowerCase();
+  const updatedBlocks = ledger.blocks.filter(
+    (b) =>
+      !b.summary.toLowerCase().includes(q) &&
+      !b.productId.toLowerCase().includes(q) &&
+      !b.txHash.toLowerCase().includes(q),
+  );
+  let prevHash = GENESIS_HASH;
+  const reindexed = updatedBlocks.map((b, idx) => {
+    const newIndex = idx + 1;
+    const newPrevHash = prevHash;
+    const newHash = pseudoHash(`${newIndex}|${newPrevHash}|${b.txHash}`);
+    prevHash = newHash;
+    return {
+      ...b,
+      index: newIndex,
+      prevHash: newPrevHash,
+      hash: newHash,
+    };
+  });
+  const next: Ledger = {
+    ...ledger,
+    blocks: reindexed,
+  };
+  saveLedger(next);
+  return next;
+}
+
+export function removeBlock(ledger: Ledger, blockIndex: number): Ledger {
+  const updatedBlocks = ledger.blocks.filter((b) => b.index !== blockIndex);
+  let prevHash = GENESIS_HASH;
+  const reindexed = updatedBlocks.map((b, idx) => {
+    const newIndex = idx + 1;
+    const newPrevHash = prevHash;
+    const newHash = pseudoHash(`${newIndex}|${newPrevHash}|${b.txHash}`);
+    prevHash = newHash;
+    return {
+      ...b,
+      index: newIndex,
+      prevHash: newPrevHash,
+      hash: newHash,
+    };
+  });
+  const next: Ledger = {
+    ...ledger,
+    blocks: reindexed,
+  };
+  saveLedger(next);
+  return next;
+}
+
+export function clearVerifyBlocks(ledger: Ledger): Ledger {
+  const nonVerify = ledger.blocks.filter((b) => b.kind !== "VERIFY");
+  // Keep at least the seed verify block if all were filtered
+  let prevHash = GENESIS_HASH;
+  const reindexed = nonVerify.map((b, idx) => {
+    const newIndex = idx + 1;
+    const newPrevHash = prevHash;
+    const newHash = pseudoHash(`${newIndex}|${newPrevHash}|${b.txHash}`);
+    prevHash = newHash;
+    return {
+      ...b,
+      index: newIndex,
+      prevHash: newPrevHash,
+      hash: newHash,
+    };
+  });
+  const next: Ledger = {
+    ...ledger,
+    blocks: reindexed,
+  };
+  saveLedger(next);
+  return next;
 }
 
 /* ---------- ledger mutations ---------- */
@@ -743,18 +846,31 @@ export function verifyCode(
       ? `Consumer scan: Batch ${product.batch} is genuine but past expiry date (${product.expDate}).`
       : `Consumer scan: Batch ${product.batch} is 100% AUTHENTIC. Complete supply chain history verified.`;
 
-  const block = nextBlock(
-    ledger,
-    "VERIFY",
-    product?.id ?? code,
-    summary,
-    status !== "counterfeit",
-    persona,
-  );
+  const lastBlock = ledger.blocks[ledger.blocks.length - 1];
+  const isDuplicateVerify =
+    lastBlock &&
+    lastBlock.kind === "VERIFY" &&
+    lastBlock.productId.toUpperCase() === (product?.id ?? code).toUpperCase();
+
+  let nextBlocks = ledger.blocks;
+  let block: Block;
+  if (isDuplicateVerify) {
+    block = lastBlock;
+  } else {
+    block = nextBlock(
+      ledger,
+      "VERIFY",
+      product?.id ?? code,
+      summary,
+      status !== "counterfeit",
+      persona,
+    );
+    nextBlocks = [...ledger.blocks, block];
+  }
 
   const next: Ledger = {
     ...ledger,
-    blocks: [...ledger.blocks, block],
+    blocks: nextBlocks,
   };
   saveLedger(next);
   return { ledger: next, result: { status, code, product, block } };

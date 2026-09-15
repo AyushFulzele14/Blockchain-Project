@@ -9,11 +9,16 @@ import {
   RefreshCw,
   Cpu,
   Layers,
+  RotateCcw,
+  Trash2,
 } from "lucide-react";
 import { SiteShell, Panel, Hash } from "@/components/site-shell";
 import {
   formatTime,
   loadLedger,
+  resetLedger,
+  removeBlock,
+  clearVerifyBlocks,
   shortHash,
   type Block,
   type BlockKind,
@@ -90,6 +95,7 @@ function Records() {
   const [filter, setFilter] = useState<BlockKind | "ALL">("ALL");
   const [query, setQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [displayCount, setDisplayCount] = useState(30);
 
   useEffect(() => {
     setLedger(loadLedger());
@@ -109,6 +115,37 @@ function Records() {
       setOnChainEvents(events);
     }
     setRefreshing(false);
+  }
+
+  function handleResetLedger() {
+    if (
+      window.confirm(
+        "Reset local simulation ledger? This will clear bloated blocks and restore the clean initial genesis ledger.",
+      )
+    ) {
+      const fresh = resetLedger();
+      setLedger(fresh);
+      setDisplayCount(30);
+    }
+  }
+
+  function handleClearVerifyBlocks() {
+    if (
+      window.confirm(
+        "Remove all consumer verification scan blocks? Batch registration and custody transit blocks will be preserved.",
+      )
+    ) {
+      const cleaned = clearVerifyBlocks(ledger);
+      setLedger(cleaned);
+      setDisplayCount(30);
+    }
+  }
+
+  function handleDeleteBlock(blockIndex: number) {
+    if (window.confirm(`Are you sure you want to remove block #${blockIndex} from the ledger?`)) {
+      const updated = removeBlock(ledger, blockIndex);
+      setLedger(updated);
+    }
   }
 
   // Unified records
@@ -162,6 +199,10 @@ function Records() {
       .sort((a, b) => b.index - a.index);
   }, [allRecords, filter, query]);
 
+  const visibleBlocks = useMemo(() => {
+    return filteredBlocks.slice(0, displayCount);
+  }, [filteredBlocks, displayCount]);
+
   return (
     <SiteShell>
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -184,13 +225,33 @@ function Records() {
             written to the blockchain.
           </p>
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-        >
-          <RefreshCw className={`size-3.5 ${refreshing ? "animate-spin" : ""}`} /> Refresh records
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {!status.connected && (
+            <>
+              <button
+                onClick={handleClearVerifyBlocks}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-amber-500 hover:text-amber-600 dark:hover:text-amber-400"
+                title="Remove unnecessary verification scan blocks"
+              >
+                <Layers className="size-3.5" /> Clear Verify Scans
+              </button>
+              <button
+                onClick={handleResetLedger}
+                className="inline-flex items-center gap-1.5 rounded-full border border-destructive/40 bg-destructive/5 px-3.5 py-2 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
+                title="Reset ledger back to initial seed height"
+              >
+                <RotateCcw className="size-3.5" /> Reset Ledger
+              </button>
+            </>
+          )}
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+          >
+            <RefreshCw className={`size-3.5 ${refreshing ? "animate-spin" : ""}`} /> Refresh records
+          </button>
+        </div>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -230,7 +291,10 @@ function Records() {
         {filters.map((f) => (
           <button
             key={f.key}
-            onClick={() => setFilter(f.key)}
+            onClick={() => {
+              setFilter(f.key);
+              setDisplayCount(30);
+            }}
             className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
               filter === f.key
                 ? "border-primary bg-primary-soft text-primary"
@@ -244,7 +308,10 @@ function Records() {
           <Search className="size-3.5 text-muted-foreground" />
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setDisplayCount(30);
+            }}
             placeholder="search hash or batch ID"
             className="w-full bg-transparent font-mono text-xs outline-none placeholder:text-muted-foreground/60"
           />
@@ -252,8 +319,8 @@ function Records() {
       </div>
 
       <div className="mt-5 space-y-4">
-        {filteredBlocks.map((b) => (
-          <RecordCard key={b.id} record={b} />
+        {visibleBlocks.map((b) => (
+          <RecordCard key={b.id} record={b} onDelete={handleDeleteBlock} />
         ))}
         {!filteredBlocks.length && (
           <Panel>
@@ -262,12 +329,28 @@ function Records() {
             </p>
           </Panel>
         )}
+        {filteredBlocks.length > visibleBlocks.length && (
+          <div className="flex justify-center pt-2">
+            <button
+              onClick={() => setDisplayCount((prev) => prev + 50)}
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+            >
+              Show More (Showing {visibleBlocks.length} of {filteredBlocks.length} blocks)
+            </button>
+          </div>
+        )}
       </div>
     </SiteShell>
   );
 }
 
-function RecordCard({ record }: { record: ExplorerRecord }) {
+function RecordCard({
+  record,
+  onDelete,
+}: {
+  record: ExplorerRecord;
+  onDelete?: (blockIndex: number) => void;
+}) {
   return (
     <Panel>
       <div className="flex flex-wrap items-center gap-3">
@@ -282,14 +365,25 @@ function RecordCard({ record }: { record: ExplorerRecord }) {
         <span className="font-mono text-[11px] text-muted-foreground">
           {formatTime(record.timestamp)}
         </span>
-        <span
-          className={`ml-auto inline-flex items-center gap-1.5 text-xs ${
-            record.valid ? "text-success" : "text-destructive"
-          }`}
-        >
-          {record.valid ? <ShieldCheck className="size-4" /> : <ShieldAlert className="size-4" />}
-          {record.isOnChain ? "On-Chain Verified" : "Verified"}
-        </span>
+        <div className="ml-auto flex items-center gap-2">
+          <span
+            className={`inline-flex items-center gap-1.5 text-xs ${
+              record.valid ? "text-success" : "text-destructive"
+            }`}
+          >
+            {record.valid ? <ShieldCheck className="size-4" /> : <ShieldAlert className="size-4" />}
+            {record.isOnChain ? "On-Chain Verified" : "Verified"}
+          </span>
+          {!record.isOnChain && onDelete && (
+            <button
+              onClick={() => onDelete(record.index)}
+              title={`Remove block #${record.index} from ledger`}
+              className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground transition-colors hover:border-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Trash2 className="size-3" /> Remove
+            </button>
+          )}
+        </div>
       </div>
 
       <p className="mt-3 text-sm">{record.summary}</p>

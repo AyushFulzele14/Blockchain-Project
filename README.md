@@ -1,6 +1,7 @@
 # PharmaLedger — Blockchain Anti-Counterfeit Pharmaceutical Network
 
 A 5-stakeholder decentralized pharmaceutical traceability and verification platform:
+
 1. **Manufacturer**: Registers genuine medicine batches, mints origin blocks on-chain, and generates serialized QR labels.
 2. **Distributor**: Tracks transit handoffs, cold-chain conditions, and verifies factory origins.
 3. **Retailer / Pharmacy**: Authenticates inventory before stocking shelves, dispenses to patients, and quarantines suspect batches.
@@ -18,6 +19,7 @@ A 5-stakeholder decentralized pharmaceutical traceability and verification platf
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js (v18+)
 - npm or bun
 
